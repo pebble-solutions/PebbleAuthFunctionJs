@@ -1,8 +1,8 @@
 // PebbleAuthFunctions.js
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
-import PebbleAuthToken from "@pebble-solutions/pebble-auth-client/lib/Models/PebbleAuthToken.js";
-import { GoogleInProgressError, GooglePlayServicesNotAvailaibableError, GoogleSignInCancelledError, GoogleSignInError } from "./errors.js";
+import PebbleAuthToken from "@pebble-solutions/pebble-auth-client/lib/Models/PebbleAuthToken";
+import { GoogleInProgressError, GooglePlayServicesNotAvailaibableError, GoogleSignInCancelledError, GoogleSignInError } from "./errors";
 
 /**
  * Effectue une authentification Firebase en utilisant un couple utilisateur/mot de passe.
@@ -115,10 +115,13 @@ const getLicences = async (options, appFirebase) => {
       i++;
     }
 
+    const auth = getAuth(appFirebase);
+    const idToken = await auth.currentUser?.getIdToken();
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${(getAuth(appFirebase)?.accessToken)}`,
+        Authorization: `Bearer ${idToken}`,
       },
     });
 
@@ -163,13 +166,14 @@ const getLicences = async (options, appFirebase) => {
 const pebbleAuthentification = async (options, appFirebase) => {
   try {
     const auth = getAuth(appFirebase);
+    const idToken = await auth.currentUser?.getIdToken();
     const response = await fetch(
       `${authServe}/auth`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${auth?.accessToken}`,
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify(options),
       }
