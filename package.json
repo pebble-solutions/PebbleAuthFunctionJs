@@ -1,6 +1,6 @@
 {
   "name": "@pebble-solutions/pebbleauthfunction",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Js function to auth with firebase/google and pebble",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,9 @@
     "firebase": "^10.7.1"
   },
   "homepage": "https://github.com/pebble-solutions/PebbleAuthFunctionJs.git",
-  "files": ["index.js", "errors.js"],
+  "files": [
+    "index.js",
+    "errors.js"
+  ],
   "type": "module"
 }
