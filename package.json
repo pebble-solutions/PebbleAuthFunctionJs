@@ -1,0 +1,16 @@
+{
+  "name": "@pebble-solutions/pebbleauthfunction",
+  "version": "1.0.0",
+  "description": "Js function to auth with firebase/google and pebble",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "tigrouformatic",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "@pebble-solutions/pebble-auth-client": "^0.4.1",
+    "@react-native-google-signin/google-signin": "^11.0.0",
+    "firebase": "^10.7.1"
+  }
+}
