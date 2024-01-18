@@ -12,5 +12,8 @@
     "@pebble-solutions/pebble-auth-client": "^0.4.1",
     "@react-native-google-signin/google-signin": "^11.0.0",
     "firebase": "^10.7.1"
-  }
+  },
+  "homepage": "https://github.com/pebble-solutions/PebbleAuthFunctionJs.git",
+  "files": ["index.js", "errors.js"],
+  "type": "module"
 }

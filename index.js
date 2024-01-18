@@ -17,7 +17,7 @@ import { GoogleInProgressError, GooglePlayServicesNotAvailaibableError, GoogleSi
  * // Appel de la fonction dans le code
  * await signInWithFirebase('test@pebble.bzh',test);
  */
-export const signInWithFirebase = async (email, password, app) => {
+const signInWithFirebase = async (email, password, app) => {
   try {
     const userCredential = await signInWithEmailAndPassword(getAuth(app), email, password);
     const data = userCredential.user;
@@ -39,7 +39,7 @@ let webClientId = '906119417386-8vilphgoe5hgjtol859ef2sgodjrlpuq.apps.googleuser
  * - webClientId string : Initialisation facultative, valeur par defaut
  *
  */
-export const initializeAuthServer = (options) => {
+const initializeAuthServer = (options) => {
   if (options.authServer) authServe = options.authServer;
   if (options.webClientId) webClientId = options.webClientId;
 };
@@ -62,7 +62,7 @@ GoogleSignin.configure({webClientId});
  * // Appel de la fonction dans le code
  * await signInWithGoogle()
  */
-export const signInWithGoogle = async (app) => {
+const signInWithGoogle = async (app) => {
   try {
     await GoogleSignin.hasPlayServices();
 
@@ -105,7 +105,7 @@ export const signInWithGoogle = async (app) => {
  * // Appel de la fonction dans le code
  * await getLicences();
  */
-export const getLicences = async (options, appFirebase) => {
+const getLicences = async (options, appFirebase) => {
   try {
     let url = `${authServe}/licences`;
     let i = 0;
@@ -160,7 +160,7 @@ export const getLicences = async (options, appFirebase) => {
  * // Appel de la fonction dans le code
  * await pebbleAuthentification(options, appFirebase);
  */
-export const pebbleAuthentification = async (options, appFirebase) => {
+const pebbleAuthentification = async (options, appFirebase) => {
   try {
     const auth = getAuth(appFirebase);
     const response = await fetch(
@@ -184,3 +184,11 @@ export const pebbleAuthentification = async (options, appFirebase) => {
     throw new Error('Erreur d\'authentification Pebble: ' + error);
   }
 };
+
+module.exports = {
+  signInWithFirebase,
+  initializeAuthServer,
+  signInWithGoogle,
+  getLicences,
+  pebbleAuthentification
+}
