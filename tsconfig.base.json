@@ -6,9 +6,10 @@
     "skipLibCheck": true,
     "checkJs": true,
     "allowJs": true,
+    "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
     "allowSyntheticDefaultImports": true
   },
-  "files": ["./index.js"]
+  "files": ["./index.ts"]
 }

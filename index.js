@@ -1,8 +1,9 @@
 // PebbleAuthFunctions.js
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import FirebaseApp from "firebase/app";
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import PebbleAuthToken from "@pebble-solutions/pebble-auth-client/lib/Models/PebbleAuthToken";
-import { GoogleInProgressError, GooglePlayServicesNotAvailaibableError, GoogleSignInCancelledError, GoogleSignInError } from "./errors";
+import { GoogleInProgressError, GooglePlayServicesNotAvailaibableError, GoogleSignInCancelledError, GoogleSignInError } from "./errors.js";
 
 /**
  * Effectue une authentification Firebase en utilisant un couple utilisateur/mot de passe.
@@ -166,6 +167,9 @@ const getLicences = async (options, appFirebase) => {
 const pebbleAuthentification = async (options, appFirebase) => {
   try {
     const auth = getAuth(appFirebase);
+
+    // const auth = getAuth(appFirebase instanceof FirebaseApp ? appFirebase : undefined);
+    
     const idToken = await auth.currentUser?.getIdToken();
     const response = await fetch(
       `${authServe}/auth`,
