@@ -1,4 +1,4 @@
-import PebbleAuthToken from "@pebble-solutions/pebble-auth-client";
+import PebbleAuthToken from "@pebble-solutions/pebble-auth-client/lib/Models/PebbleAuthToken.js";
 import type { FirebaseApp } from 'firebase/app';
 import type { User } from 'firebase/auth';
 /**
