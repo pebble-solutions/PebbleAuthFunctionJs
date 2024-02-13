@@ -1,11 +1,16 @@
-import PebbleAuthToken from "@pebble-solutions/pebble-auth-client/lib/Models/PebbleAuthToken.js";
-import { GoogleInProgressError, GooglePlayServicesNotAvailaibableError, GoogleSignInCancelledError, GoogleSignInError } from "./errors.js";
+import {PebbleAuthToken} from "@pebble-solutions/pebble-auth-client";
+import {
+    GoogleInProgressError,
+    GooglePlayServicesNotAvailaibableError,
+    GoogleSignInCancelledError,
+    GoogleSignInError
+} from "./errors.js";
 
-import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import type {User} from 'firebase/auth';
+import {getAuth, GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword} from "firebase/auth";
+import {GoogleSignin, statusCodes} from '@react-native-google-signin/google-signin';
 
-import type { FirebaseApp } from 'firebase/app';
-import type { User } from 'firebase/auth';
+import type {FirebaseApp} from 'firebase/app';
 
 /**
  * Perform Firebase authentication using an email/password combination.
@@ -19,8 +24,7 @@ import type { User } from 'firebase/auth';
 const signInWithFirebase = async (email: string, password: string, appFirebase?: FirebaseApp | null): Promise<User | Error> => {
   try {
     const userCredential = await signInWithEmailAndPassword(getAuth(appFirebase !== null && appFirebase !== undefined ? appFirebase : undefined), email, password);
-    const data = userCredential.user;
-    return data;
+    return userCredential.user;
   } catch (error) {
     return error as Error;
   }

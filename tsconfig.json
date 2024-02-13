@@ -1,16 +1,13 @@
 {
   "compilerOptions": {
+    "target": "ES2015",
+    "module": "es2020",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "checkJs": true,
-    "allowJs": true,
-    "resolveJsonModule": true,
     "declaration": true,
-    "declarationMap": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "es2016",
+    "skipLibCheck": true,
+    "outDir": "./lib/esm",
     "moduleResolution": "node"
   },
   "files": ["./index.ts", "./errors.ts"]
