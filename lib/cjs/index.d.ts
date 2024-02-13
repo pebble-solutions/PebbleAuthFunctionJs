@@ -1,6 +1,6 @@
-import PebbleAuthToken from "@pebble-solutions/pebble-auth-client";
-import type { FirebaseApp } from 'firebase/app';
+import { PebbleAuthToken } from "@pebble-solutions/pebble-auth-client";
 import type { User } from 'firebase/auth';
+import type { FirebaseApp } from 'firebase/app';
 /**
  * Perform Firebase authentication using an email/password combination.
  *
@@ -76,4 +76,3 @@ declare const pebbleAuthentification: (options: {
     user: User | null;
 } | Error>;
 export { signInWithFirebase, initializeAuthServer, signInWithGoogle, getLicences, pebbleAuthentification };
-//# sourceMappingURL=index.d.ts.map

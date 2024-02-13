@@ -14,4 +14,3 @@ export declare class GoogleSignInError extends Error {
     parentError: any;
     constructor(error: any);
 }
-//# sourceMappingURL=errors.d.ts.map
