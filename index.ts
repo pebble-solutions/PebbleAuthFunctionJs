@@ -1,91 +1,113 @@
-import {PebbleAuthToken} from "@pebble-solutions/pebble-auth-client";
-import {
-    GoogleInProgressError,
-    GooglePlayServicesNotAvailaibableError,
-    GoogleSignInCancelledError,
-    GoogleSignInError
-} from "./errors.js";
-
 import type {User} from 'firebase/auth';
-import {getAuth, GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword} from "firebase/auth";
-import {GoogleSignin, statusCodes} from '@react-native-google-signin/google-signin';
-
+import {getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult, OAuthProvider, signOut} from "firebase/auth";
 import type {FirebaseApp} from 'firebase/app';
 
+import { AuthClientOptions } from "./types/AuthClientOptions";
+import { PebbleAuthorization } from "./classes/PebbleAuthorization";
+import {fetchAuthToken} from "./functions/fetchAuthTokenFunction.js";
+import { FirebaseAuthenticationError, GoogleAuthenticationError, MicrosoftAuthenticationError, LicenseRetrievalError, UnexpectedLicenseResponseError, UnexpectedApiResponseError, UserDoesNotExistError, SignOutError } from './errors';
+
 /**
- * Perform Firebase authentication using an email/password combination.
+ * Authenticate the user using Firebase Authentication with an email/password combination.
  *
- * @param {string} email
- * @param {string} password
- * @param {?FirebaseApp} appFirebase
+ * @param {string} email - The user's email address.
+ * @param {string} password - The user's password.
+ * @param {?FirebaseApp} appFirebase - The Firebase application instance to use for authentication. Optional.
  * 
- * @returns {Promise<User>}
+ * @returns {Promise<User>}  A promise that resolves with the authenticated user or rejects if authentication fails.
+ * 
+ * @throws {FirebaseAuthenticationError}  Error indicating a failure during authentication with Firebase.
+ *
+ * @example
+ * // Example usage:
+ * // Call the function in your code
+ *  await signInWithFirebase('test@pebble.bzh', '1234');
  */
-const signInWithFirebase = async (email: string, password: string, appFirebase?: FirebaseApp | null): Promise<User | Error> => {
+const signInWithFirebase = async (email: string, password: string, appFirebase?: FirebaseApp | null): Promise<User> => {
   try {
     const userCredential = await signInWithEmailAndPassword(getAuth(appFirebase !== null && appFirebase !== undefined ? appFirebase : undefined), email, password);
     return userCredential.user;
   } catch (error) {
-    return error as Error;
+    throw new FirebaseAuthenticationError();
   }
 };
 
-let authServe = 'https://pebbleauthserver-xbnqmf3wfa-ew.a.run.app/';
-let webClientId = '906119417386-8vilphgoe5hgjtol859ef2sgodjrlpuq.apps.googleusercontent.com';
+
+let authServer = 'https://api.pebble.solutions/v5/authorize/';
 
 /**
- * Initialize the authServe URL and webClientId.
+ * Initialize the authServe URL.
  *
  * @param {object} options
  * - authServer string  : Optional initialization, default value
- * - webClientId string : Optional initialization, default value
  */
-const initializeAuthServer = (options: { authServer?: string; webClientId?: string }): void => {
-  if (options.authServer) authServe = options.authServer;
-  if (options.webClientId) webClientId = options.webClientId;
+const initializeAuthServer = (options: { authServer?: string}): void => {
+  if (options.authServer) authServer = options.authServer;
 };
 
-GoogleSignin.configure({ webClientId });
+/**
+ * Authenticate the user with their Google account using Firebase Authentication.
+ * This function redirects the user to the Google login page.
+ *
+ * @param {?FirebaseApp} appFirebase - The Firebase application instance to use for authentication. Optional.
+ * 
+ * @returns {Promise<User>} - A promise that resolves with the authenticated user or rejects if authentication fails.
+ * 
+ * @throws {GoogleAuthenticationError}    Error indicating a failure during authentication with Google.
+ * @throws {UserDoesNotExistError}        Error indicating that no user was found after the login.
+ *
+ * @example
+ * // Example usage:
+ * await signInWithGoogle();
+ */
+const signInWithGoogle = async (appFirebase?: FirebaseApp | null): Promise<User> => {
+  try {
+    const auth = getAuth(appFirebase !== null && appFirebase !== undefined ? appFirebase : undefined);
+    const provider = new GoogleAuthProvider();
+    await signInWithRedirect(auth, provider);
+    const userCredential = await getRedirectResult(auth);
+
+    if (userCredential == null || userCredential.user == null) {
+      throw new UserDoesNotExistError("No user found after the login.");
+    } else {
+      return userCredential.user;
+    }
+  } catch (error) {
+    throw new GoogleAuthenticationError();
+  }
+};
+
 
 /**
- * Perform Google authentication using the Google Sign-In service.
- * 
- * @param {?FirebaseApp} appFirebase
+ * Log in the user with their Microsoft account using Firebase Authentication.
+ * This function redirects the user to the Microsoft login page.
  *
- * @returns {Promise<User>}
+ * @param {?FirebaseApp} appFirebase - The Firebase application to use for authentication. Optional.
  * 
- * @throws {GoogleSignInCancelledError}               
- * @throws {GoogleInProgressError}                    
- * @throws {GooglePlayServicesNotAvailaibableError}   
- * @throws {GoogleSignInError}  
- * @throws {Error}                          
+ * @returns {Promise<User>} - A promise that resolves with the logged-in user or rejects if authentication fails.
+ * 
+ * @throws {MicrosoftAuthenticationError} - Error indicating a failure during authentication with Microsoft.
+ * @throws {UserDoesNotExistError} - Error indicating that no user was found after the login.
+ *
+ * @example
+ * // Calling the function in code
+ * await signInWithMicrosoft()
  */
-const signInWithGoogle = async (appFirebase?: FirebaseApp | null): Promise<User | Error> => {
-    try {
-      await GoogleSignin.hasPlayServices();
-  
-      const { idToken } = await GoogleSignin.signIn();
-  
-      const googleCredential = GoogleAuthProvider.credential(idToken);
-      const userCredential = await signInWithCredential(getAuth(appFirebase !== null && appFirebase !== undefined ? appFirebase : undefined), googleCredential);
-      const data = userCredential.user;
-  
-      return data;
-    } catch (error) {
-        if (error && typeof error === 'object' && 'code' in error && error.code) {
-            if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-            throw new GoogleSignInCancelledError(error);
-            } else if (error.code === statusCodes.IN_PROGRESS) {
-            throw new GoogleInProgressError(error);
-            } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-            throw new GooglePlayServicesNotAvailaibableError(error);
-            } else {
-            throw new GoogleSignInError(error);
-            }
-        } else {
-            throw new Error('Erreur non traité pendant la connexion (Google Sign-In)');
-        }
+const signInWithMicrosoft = async (appFirebase?: FirebaseApp | null): Promise<User> => {
+  try { 
+    const auth = getAuth(appFirebase !== null && appFirebase !== undefined ? appFirebase : undefined);
+    const provider = new OAuthProvider('microsoft.com');
+    await signInWithRedirect(auth, provider);
+    const userCredential = await getRedirectResult(auth);
+
+    if (userCredential == null || userCredential.user == null) {
+      throw new UserDoesNotExistError("Aucun utilisateur trouvé après la connexion.");
+    } else {
+      return userCredential.user;
     }
+  } catch (error) {
+    throw new MicrosoftAuthenticationError();
+  }
 };
 
 /**
@@ -97,90 +119,88 @@ const signInWithGoogle = async (appFirebase?: FirebaseApp | null): Promise<User 
  * - tenant_id          string    If exists, return only licenses that match with the provided tenant_id value.
  * @param {?FirebaseApp} appFirebase
  * 
- * @returns {Promise<void>}
+ * @returns {Promise<Array<any>>}   An array of licenses retrieved from the server.
  * 
- * @throws {Error} Return http error from the authorization server
+ * @throws {LicenseRetrievalError}            Thrown when an error occurs during license retrieval from the server.
+ * @throws {UnexpectedLicenseResponseError}   Thrown when an unexpected response is received from the server during license retrieval.
+ * @throws {UnexpectedApiResponseError}       Thrown when an unexpected error occurs during license retrieval.
  */
-const getLicences = async (options: { app?: string; include_disabled?: number; tenant_id?: string }, appFirebase?: FirebaseApp | null): Promise<Array<any> | Error> => {
-    try {
-        let url = `${authServe}/licences`;
-        let i = 0;
-        for (const key in options) {
+const getLicences = async (options: { app?: string; include_disabled?: number; tenant_id?: string }, appFirebase?: FirebaseApp | null): Promise<Array<any>> => {
+  try {
+      let url = `${authServer}/licences`;
+      let i = 0;
+      for (const key in options) {
         const sep = i > 0 ? '&' : '?';
         url += `${sep}${key}=${(options as any)[key]}`;
         i++;
-        }
+      }
 
-        const auth = getAuth(appFirebase !== null && appFirebase !== undefined ? appFirebase : undefined);
-        const idToken = await auth.currentUser?.getIdToken();
+      const auth = getAuth(appFirebase !== null && appFirebase !== undefined ? appFirebase : undefined);
+      const idToken = await auth.currentUser?.getIdToken();
 
-        const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-            Authorization: `Bearer ${idToken}`,
-        },
-        });
+      const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+          Authorization: `Bearer ${idToken}`,
+      },
+      });
 
-        if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+      if (!response.ok) {
+        throw new LicenseRetrievalError(response.status);
+      }
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (Array.isArray(data)) {
+      if (Array.isArray(data)) {
         return data;
-        } else {
-        throw new Error('Unexpected server response when retrieving licenses');
-        }
-    } catch (error) {
-        console.error('Error retrieving licenses:', error);
-        return error as Error;
-    }
+      } else {
+        throw new UnexpectedLicenseResponseError();
+      }
+  } catch (error) {
+      throw new UnexpectedApiResponseError(error);
+  }
 };  
 
 /**
  * Perform Pebble authentication using the server API.
  *
- * @param {object} options
+ * @param {AuthClientOptions} options
  * - app          string  mandatory   Authenticate user to the provided application. One token is served for one application.
  * - tenant_id    string              Tenant that will consume resources. This property is mandatory if multiple tenants are returned by license request.
  * 
  * @param {?FirebaseApp} appFirebase
  *
- * @returns {Promise<PebbleAuthToken>}
+ * @returns {Promise<PebbleAuthorization>}
  * 
- * @throws {Error} If the authentication request fails.
  */
-const pebbleAuthentification = async (options: { app: string; tenant_id?: string }, appFirebase?: FirebaseApp | null): Promise<{ pebbleAuthToken: PebbleAuthToken; user: User | null } | Error> => {
-  try {
-    const auth = getAuth(appFirebase !== null && appFirebase !== undefined ? appFirebase : undefined);
-    const idToken = await auth.currentUser?.getIdToken();
-    const response = await fetch(
-      `${authServe}/auth`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify(options),
-      }
-    );
-
-    const data = await response.json();
-    const pebbleAuthToken = new PebbleAuthToken(data);
-    const user = auth.currentUser;
-
-    return { pebbleAuthToken, user };
-  } catch (error) {
-    throw new Error('Pebble authentication error: ' + error);
+const pebbleAuthentification = async (options: AuthClientOptions, appFirebase?: FirebaseApp | null): Promise<PebbleAuthorization> => {
+  let pebbleOptions = {
+    appFirebase,
+    authEndpoint : `${authServer}/auth`,
+    options
   }
+
+  const authResponse = await fetchAuthToken(pebbleOptions);
+
+  const pebbleAuthorization = new PebbleAuthorization(authResponse.resp, pebbleOptions);
+
+  return pebbleAuthorization;
+};
+
+const signOutFunction = async (appFirebase?: FirebaseApp | null) => {
+  const auth = getAuth(appFirebase !== null && appFirebase !== undefined ? appFirebase : undefined);
+  signOut(auth).then(() => {
+  }).catch((error) => {
+    throw new SignOutError(error.message);
+  });
 };
 
 export {
   signInWithFirebase,
   initializeAuthServer,
   signInWithGoogle,
+  signInWithMicrosoft,
   getLicences,
-  pebbleAuthentification
+  pebbleAuthentification,
+  signOutFunction
 };
