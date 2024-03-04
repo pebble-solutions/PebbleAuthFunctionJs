@@ -32,7 +32,6 @@ const signInWithFirebase = async (email: string, password: string, appFirebase?:
   }
 };
 
-
 let authServer = 'https://api.pebble.solutions/v5/authorize/';
 
 /**
@@ -76,7 +75,6 @@ const signInWithGoogle = async (appFirebase?: FirebaseApp | null): Promise<User>
     throw new GoogleAuthenticationError();
   }
 };
-
 
 /**
  * Log in the user with their Microsoft account using Firebase Authentication.
