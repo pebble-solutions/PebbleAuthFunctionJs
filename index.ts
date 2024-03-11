@@ -4,7 +4,7 @@ import type {FirebaseApp} from 'firebase/app';
 
 import { AuthClientOptions } from "./types/AuthClientOptions";
 import { PebbleAuthorization } from "./classes/PebbleAuthorization";
-import {fetchAuthToken} from "./functions/fetchAuthTokenFunction.js";
+import {fetchAuthToken} from "./functions/fetchAuthTokenFunction";
 import { FirebaseAuthenticationError, GoogleAuthenticationError, MicrosoftAuthenticationError, LicenseRetrievalError, UnexpectedLicenseResponseError, UnexpectedApiResponseError, UserDoesNotExistError, SignOutError } from './errors';
 
 /**
